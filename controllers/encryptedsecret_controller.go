@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/go-logr/logr"
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
+	"github.com/shubhindia/encrypted-secrets/controllers/utils"
 )
 
 // EncryptedSecretReconciler reconciles a EncryptedSecret object
@@ -59,6 +61,14 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 
 	}
+
+	sec := utils.Secret{}
+
+	sec.LockedString = instance.Data["test"]
+
+	decrypted := sec.Decrypt()
+
+	fmt.Printf("Decrypted value is: %s", decrypted)
 
 	return ctrl.Result{}, nil
 }
