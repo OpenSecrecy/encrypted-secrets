@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/go-logr/logr"
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
 )
 
@@ -31,6 +32,7 @@ import (
 type EncryptedSecretReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	log    logr.Logger
 }
 
 //+kubebuilder:rbac:groups=secrets.shubhindia.xyz,resources=encryptedsecrets,verbs=get;list;watch;create;update;patch;delete
@@ -47,9 +49,16 @@ type EncryptedSecretReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	r.log = log.FromContext(ctx).WithValues("EncryptedSecret", req.NamespacedName)
+	r.log.Info("Started encryptedsecret reconciliation")
 
-	// TODO(user): your logic here
+	instance := &secretsv1alpha1.EncryptedSecret{}
+
+	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+		r.log.Info("Unable to fetch encryptedsecret object")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+
+	}
 
 	return ctrl.Result{}, nil
 }
