@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/go-logr/logr"
+	"github.com/shubhindia/crypt-core/providers"
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
-	"github.com/shubhindia/encrypted-secrets/controllers/utils"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // EncryptedSecretReconciler reconciles a EncryptedSecret object
@@ -62,13 +62,16 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	}
 
-	sec := utils.Secret{}
+	for key, value := range instance.Data {
 
-	sec.LockedString = instance.Data["test"]
+		decryptedString, err := providers.DecodeAndDecrypt(value, "k8s")
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to decrypt value for %s %s", key, err.Error())
+		}
 
-	decrypted := sec.Decrypt()
+		fmt.Printf("\nDecrypted value is %s\n", decryptedString)
 
-	fmt.Printf("Decrypted value is: %s", decrypted)
+	}
 
 	return ctrl.Result{}, nil
 }
