@@ -1,94 +1,31 @@
-# encryted-secrets
-// TODO(user): Add simple overview of use/purpose
+# Encrypted-Secrets Kubernetes Operator
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+The Encrypted-Secrets Kubernetes Operator is a tool designed to enhance the security of your Kubernetes cluster by automatically decrypting encrypted secrets and storing them in Kubernetes Secrets. This operator looks for the `EncryptedSecret` custom resource kind and performs the decryption process, ensuring that sensitive information remains protected while being accessible to your applications.
 
-## Getting Started
-You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
-**Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
-### Running on the cluster
-1. Install Instances of Custom Resources:
+## Note: `EncryptedSecrets Operator` is currently a work in progress and is in the alpha stage. Please use it with caution in production environments.
+## How it Works
 
-```sh
-kubectl apply -f config/samples/
-```
+1. **Define Encrypted Secrets**: Create a custom resource of kind `EncryptedSecret` that includes the encrypted secret data. This custom resource can be defined using YAML or through Kubernetes API calls.
 
-2. Build and push your image to the location specified by `IMG`:
+2. **Encryption Process**: The encryptedSecret custom resource contains encrypted secret data, typically using a strong encryption algorithm like AES or a supported cloud provider. The encryption process might involve using external tools or libraries.
 
-```sh
-make docker-build docker-push IMG=<some-registry>/encryted-secrets:tag
-```
+3. **Encrypted-Secrets Operator**: The operator continuously monitors the cluster for new encryptedSecret resources.
 
-3. Deploy the controller to the cluster with the image specified by `IMG`:
+4. **Decryption Process**: When a new encryptedSecret resource is detected, the operator initiates the decryption process using the provided decryption key or external secrets management solution.
 
-```sh
-make deploy IMG=<some-registry>/encryted-secrets:tag
-```
+5. **Kubernetes Secret Creation**: Once the encryptedSecret is successfully decrypted, the operator creates a Kubernetes Secret containing the decrypted secret data.
 
-### Uninstall CRDs
-To delete the CRDs from the cluster:
+6. **Mount Secrets in Applications**: Your applications can then access the decrypted secrets by mounting the Kubernetes Secret as environment variables or files.
 
-```sh
-make uninstall
-```
+## Prerequisites
+- Encrypted-Secrets Kubernetes Operator deployed in the cluster
 
-### Undeploy controller
-UnDeploy the controller from the cluster:
+## Installation (WIP)
 
-```sh
-make undeploy
-```
+1. Deploy the Encrypted-Secrets Operator in your Kubernetes cluster by applying the provided YAML manifests or using a package manager like Helm.
 
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
+2. Verify the operator's deployment by checking the operator pod status:
 
-### How it works
-This project aims to follow the Kubernetes [Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
-
-It uses [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/),
-which provide a reconcile function responsible for synchronizing resources until the desired state is reached on the cluster.
-
-### Test It Out
-1. Install the CRDs into the cluster:
-
-```sh
-make install
-```
-
-2. Run your controller (this will run in the foreground, so switch to a new terminal if you want to leave it running):
-
-```sh
-make run
-```
-
-**NOTE:** You can also run this in one step by running: `make install run`
-
-### Modifying the API definitions
-If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
-
-```sh
-make manifests
-```
-
-**NOTE:** Run `make --help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
-
-## License
-
-Copyright 2023.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
+   ```shell
+   kubectl get pods -n <namespace>
