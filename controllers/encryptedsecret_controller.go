@@ -20,14 +20,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-logr/logr"
+	"github.com/shubhindia/crypt-core/providers"
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/go-logr/logr"
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
-	"github.com/shubhindia/encrypted-secrets/controllers/utils"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // EncryptedSecretReconciler reconciles a EncryptedSecret object
@@ -62,13 +65,44 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	}
 
-	sec := utils.Secret{}
+	decryptedObj, err := providers.DecodeAndDecrypt(instance)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to decrypt value for %s", err.Error())
+	}
 
-	sec.LockedString = instance.Data["test"]
+	// create a secret to hold the decrypted secrets
+	secretInstance := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance.Name,
+			Namespace: instance.Namespace,
+		},
+	}
 
-	decrypted := sec.Decrypt()
+	// map to hold decryptedData in map[string][]byte format
+	// ToDo: figure out optimal way to do this. There is absolutely no need to increase space complexity here
+	decryptedData := make(map[string][]byte)
+	for key, value := range decryptedObj.Data {
+		decryptedData[key] = []byte(value)
+	}
 
-	fmt.Printf("Decrypted value is: %s", decrypted)
+	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, &secretInstance, func() error {
+		// set Labels and Annotations
+		secretInstance.Labels = instance.Labels
+		secretInstance.Annotations = instance.Annotations
+
+		// Add the data
+		secretInstance.Data = decryptedData
+
+		// set ownerReference
+		err := controllerutil.SetOwnerReference(instance, &secretInstance, r.Scheme)
+		if err != nil {
+			return fmt.Errorf("error setting owner reference %s", err.Error())
+		}
+		return nil
+	})
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error getting secret %s", err.Error())
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -77,5 +111,6 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 func (r *EncryptedSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&secretsv1alpha1.EncryptedSecret{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }

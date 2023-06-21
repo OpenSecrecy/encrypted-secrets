@@ -20,33 +20,26 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EncryptedSecretStatus defines the observed state of EncryptedSecret
-type EncryptedSecretStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// EncryptedSecret is the Schema for the encryptedsecrets API
-type EncryptedSecret struct {
+// DecryptedSecret is the Schema for the decryptedsecrets API
+type DecryptedSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Data   map[string]string     `json:"data,omitempty"`
-	Status EncryptedSecretStatus `json:"status,omitempty"`
+	Data map[string]string `json:"data,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// EncryptedSecretList contains a list of EncryptedSecret
-type EncryptedSecretList struct {
+// DecryptedSecretList contains a list of DecryptedSecret
+type DecryptedSecretList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []EncryptedSecret `json:"items"`
+	Items           []DecryptedSecret `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&EncryptedSecret{}, &EncryptedSecretList{})
+	SchemeBuilder.Register(&DecryptedSecret{}, &DecryptedSecretList{})
 }
