@@ -21,12 +21,16 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	"github.com/shubhindia/crypt-core/providers"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/shubhindia/crypt-core/providers"
+	hackedsecretsv1alpha1 "github.com/shubhindia/cryptctl/apis/secrets/v1alpha1"
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -62,15 +66,51 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	}
 
-	for key, value := range instance.Data {
+	// ToDo: below piece of code is a hack to use the same apis.
+	// even though they are same, they are declared at two different places so can't really only one in all the places i.e. cryptctl and encrypted-secrets and crypt-core
+	// Will cleanup this mess once I have a solid foundation to work upon. For now this will remain a tech debt
 
-		decryptedString, err := providers.DecodeAndDecrypt(value, "k8s")
+	hackedInstance := hackedsecretsv1alpha1.EncryptedSecret{
+		TypeMeta:   instance.TypeMeta,
+		ObjectMeta: instance.ObjectMeta,
+		Data:       instance.Data,
+	}
+	decryptedData := make(map[string][]byte)
+
+	decryptedObj, err := providers.DecodeAndDecrypt(&hackedInstance)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to decrypt value for %s", err.Error())
+	}
+
+	// create a secret to hold the decrypted secrets
+	secretInstance := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance.Name,
+			Namespace: instance.Namespace,
+		},
+	}
+
+	for key, value := range decryptedObj.Data {
+		decryptedData[key] = []byte(value)
+	}
+
+	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, &secretInstance, func() error {
+		// set Labels and Annotations
+		secretInstance.Labels = instance.Labels
+		secretInstance.Annotations = instance.Annotations
+
+		// Add the data
+		secretInstance.Data = decryptedData
+
+		// set ownerReference
+		err := controllerutil.SetOwnerReference(instance, &secretInstance, r.Scheme)
 		if err != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to decrypt value for %s %s", key, err.Error())
+			return fmt.Errorf("error setting owner reference %s", err.Error())
 		}
-
-		fmt.Printf("\nDecrypted value is %s\n", decryptedString)
-
+		return nil
+	})
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error getting secret %s", err.Error())
 	}
 
 	return ctrl.Result{}, nil
@@ -80,5 +120,6 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 func (r *EncryptedSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&secretsv1alpha1.EncryptedSecret{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
