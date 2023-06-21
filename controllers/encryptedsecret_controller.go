@@ -27,7 +27,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	hackedsecretsv1alpha1 "github.com/shubhindia/cryptctl/apis/secrets/v1alpha1"
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -66,18 +65,7 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	}
 
-	// ToDo: below piece of code is a hack to use the same apis.
-	// even though they are same, they are declared at two different places so can't really only one in all the places i.e. cryptctl and encrypted-secrets and crypt-core
-	// Will cleanup this mess once I have a solid foundation to work upon. For now this will remain a tech debt
-
-	hackedInstance := hackedsecretsv1alpha1.EncryptedSecret{
-		TypeMeta:   instance.TypeMeta,
-		ObjectMeta: instance.ObjectMeta,
-		Data:       instance.Data,
-	}
-	decryptedData := make(map[string][]byte)
-
-	decryptedObj, err := providers.DecodeAndDecrypt(&hackedInstance)
+	decryptedObj, err := providers.DecodeAndDecrypt(instance)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to decrypt value for %s", err.Error())
 	}
@@ -90,6 +78,9 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		},
 	}
 
+	// map to hold decryptedData in map[string][]byte format
+	// ToDo: figure out optimal way to do this. There is absolutely no need to increase space complexity here
+	decryptedData := make(map[string][]byte)
 	for key, value := range decryptedObj.Data {
 		decryptedData[key] = []byte(value)
 	}

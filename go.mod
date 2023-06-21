@@ -7,12 +7,15 @@ require (
 	github.com/onsi/ginkgo/v2 v2.9.5
 	github.com/onsi/gomega v1.27.7
 	github.com/shubhindia/crypt-core v0.0.0-20230621092129-bb728814ec17
-	github.com/shubhindia/cryptctl v0.0.2-0.20230620043121-2a7e901cc53e
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
 	sigs.k8s.io/controller-runtime v0.15.0
 )
+
+// keeping this here just a reference and a quick switch for when I want to
+// test crypt-core from my local rather than remote
+// replace github.com/shubhindia/crypt-core => /Users/sgopale/Work/crypt-core
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -47,6 +50,7 @@ require (
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
+	github.com/shubhindia/cryptctl v0.0.2-0.20230620043121-2a7e901cc53e // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
