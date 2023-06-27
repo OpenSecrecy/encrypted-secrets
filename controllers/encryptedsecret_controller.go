@@ -44,15 +44,6 @@ type EncryptedSecretReconciler struct {
 //+kubebuilder:rbac:groups=secrets.shubhindia.xyz,resources=encryptedsecrets/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=secrets.shubhindia.xyz,resources=encryptedsecrets/finalizers,verbs=update
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the EncryptedSecret object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.log = log.FromContext(ctx).WithValues("EncryptedSecret", req.NamespacedName)
 	r.log.Info("Started encryptedsecret reconciliation")
@@ -67,7 +58,9 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	decryptedObj, err := providers.DecodeAndDecrypt(instance)
 	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to decrypt value for %s", err.Error())
+		instance.Status.Status = secretsv1alpha1.EncryptedSecretStatusError
+		instance.Status.Message = fmt.Sprintf("failed to decrypt value for %s", err.Error())
+		return r.ensureStatus(ctx, instance, ctrl.Result{})
 	}
 
 	// create a secret to hold the decrypted secrets
@@ -96,15 +89,21 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		// set ownerReference
 		err := controllerutil.SetOwnerReference(instance, &secretInstance, r.Scheme)
 		if err != nil {
-			return fmt.Errorf("error setting owner reference %s", err.Error())
+			instance.Status.Status = secretsv1alpha1.EncryptedSecretStatusError
+			instance.Status.Message = fmt.Sprintf("error setting owner reference %s", err.Error())
+			return r.Status().Update(ctx, instance)
 		}
 		return nil
 	})
 	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("error getting secret %s", err.Error())
+		instance.Status.Status = secretsv1alpha1.EncryptedSecretStatusError
+		instance.Status.Message = fmt.Sprintf("error getting secret %s", err.Error())
+		return r.ensureStatus(ctx, instance, ctrl.Result{})
 	}
 
-	return ctrl.Result{}, nil
+	instance.Status.Status = secretsv1alpha1.EncryptedSecretStatusReady
+	instance.Status.Message = fmt.Sprintf("encrypted secrets %s is ready to be used", instance.Name)
+	return r.ensureStatus(ctx, instance, ctrl.Result{})
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -113,4 +112,16 @@ func (r *EncryptedSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&secretsv1alpha1.EncryptedSecret{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
+}
+
+// ensureStatus makes sure that proper status is applied to the EncryptedSecret instance
+func (r *EncryptedSecretReconciler) ensureStatus(ctx context.Context, instance *secretsv1alpha1.EncryptedSecret, result ctrl.Result) (ctrl.Result, error) {
+
+	err := r.Status().Update(ctx, instance)
+	if err != nil {
+		r.log.Error(err, "Failed to update status")
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	return result, nil
 }

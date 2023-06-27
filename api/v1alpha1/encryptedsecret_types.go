@@ -20,14 +20,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	EncryptedSecretStatusReady = "Ready"
+	EncryptedSecretStatusError = "Error"
+)
+
 // EncryptedSecretStatus defines the observed state of EncryptedSecret
 type EncryptedSecretStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+//+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.status`
 
 // EncryptedSecret is the Schema for the encryptedsecrets API
 type EncryptedSecret struct {

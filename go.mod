@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/onsi/ginkgo/v2 v2.9.5
 	github.com/onsi/gomega v1.27.7
-	github.com/shubhindia/crypt-core v0.0.0-20230621112125-a48c11b3191d
+	github.com/shubhindia/crypt-core v0.0.0-20230621144108-0f9919dbd74a
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
