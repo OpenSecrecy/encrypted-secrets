@@ -6,16 +6,11 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/onsi/ginkgo/v2 v2.9.5
 	github.com/onsi/gomega v1.27.7
-	github.com/shubhindia/crypt-core v0.0.0-20230621144108-0f9919dbd74a
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
 	sigs.k8s.io/controller-runtime v0.15.0
 )
-
-// keeping this here just a reference and a quick switch for when I want to
-// test crypt-core from my local rather than remote
-// replace github.com/shubhindia/crypt-core => /Users/sgopale/Work/crypt-core
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
