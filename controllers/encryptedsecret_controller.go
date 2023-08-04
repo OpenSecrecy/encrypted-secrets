@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/shubhindia/crypt-core/providers"
+	"github.com/shubhindia/encrypted-secrets/pkg/providers"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -43,6 +43,7 @@ type EncryptedSecretReconciler struct {
 //+kubebuilder:rbac:groups=secrets.shubhindia.xyz,resources=encryptedsecrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=secrets.shubhindia.xyz,resources=encryptedsecrets/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=secrets.shubhindia.xyz,resources=encryptedsecrets/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.log = log.FromContext(ctx).WithValues("EncryptedSecret", req.NamespacedName)
