@@ -133,6 +133,18 @@ metadata:
   name: encrypted-secrets-manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - secrets.shubhindia.xyz
   resources:
   - encryptedsecrets
@@ -363,6 +375,9 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
         name: manager
+        env:
+          - name: KEYPHRASE
+            value: '7vpwfEAtuC5vawuVm9CjK514sncLNL0YJUHdwIvc'
         readinessProbe:
           httpGet:
             path: /readyz
