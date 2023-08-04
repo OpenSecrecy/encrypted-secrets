@@ -4,6 +4,7 @@ name: Build and push images
 on:
   push:
     branches:
+      - 'main'
       - 'feature/*'
       - 'fix/*'
 
