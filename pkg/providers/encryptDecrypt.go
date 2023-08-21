@@ -62,7 +62,7 @@ func DecodeAndDecrypt(encryptedSecret *secretsv1alpha1.EncryptedSecret) (*secret
 			return nil, fmt.Errorf("failed to get the secret %v", err)
 		}
 
-		// Access the secret data"
+		// Access the secret data
 		keyPhrase := string(secret.Data["tls.crt"])
 
 		// ToDo: plan is to eventually mode this repeated code to a separate util or something.
@@ -134,8 +134,8 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret) (*secrets
 			return nil, fmt.Errorf("failed to get the secret %v", err)
 		}
 
-		// Access the secret data"
-		keyPhrase := string(secret.Data["token"])
+		// Access the secret data
+		keyPhrase := string(secret.Data["tls.crt"])
 
 		// ToDo: plan is to eventually mode this repeated code to a separate util or something.
 		// need to figure out a way to avoid this code repetition
