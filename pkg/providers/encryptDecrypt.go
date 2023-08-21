@@ -126,14 +126,10 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret) (*secrets
 			return nil, fmt.Errorf("failed to get kubeclient %v", err)
 		}
 
-		// define the namespace and secret name to retrieve
-		// for now I am keeping this to default since the default service account exists for all the namespaces
-		// due to which we don't have to create anyhing apart from the secret for the SA using the provided yaml in the docs
-		secretName := "default"
 		namespace := decryptedSecret.Namespace
 
 		// Retrieve the secret from the Kubernetes cluster
-		secret, err := k8sClient.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, v1.GetOptions{})
+		secret, err := k8sClient.CoreV1().Secrets(namespace).Get(context.TODO(), "cryptctl-key", v1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to get the secret %v", err)
 		}
