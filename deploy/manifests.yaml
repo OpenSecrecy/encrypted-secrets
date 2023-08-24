@@ -367,7 +367,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: shubhindia/encrypted-secrets-controller:feature-move-away-from-crypt-core
+        image: shubhindia/encrypted-secrets-controller:main
         livenessProbe:
           httpGet:
             path: /healthz
