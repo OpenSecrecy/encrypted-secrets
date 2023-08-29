@@ -3,11 +3,6 @@ name: Build and push images
 # Only release when a new GH release branch is pushed
 on:
   push:
-    branches:
-      - 'main'
-      - 'feature/*'
-      - 'fix/*'
-
 jobs:
   build:
     runs-on: ubuntu-latest
