@@ -18,6 +18,9 @@ jobs:
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+      - name: Configure variables
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -46,3 +49,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - name: Release manifest
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          VERSION: ${{ env.VERSION }}
+          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          sed -e "s/{IMAGE_TAG}/${VERSION}/g" deploy/manifests.yaml > encrypted-secrets-controller.yaml
+          go install github.com/tcnksm/ghr@latest
+          ghr -c ${{ github.sha }} ${{ github.ref_name }} encrypted-secrets-controller.yaml

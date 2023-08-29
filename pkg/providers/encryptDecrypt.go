@@ -2,9 +2,13 @@ package providers
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/shubhindia/encrypted-secrets/pkg/providers/utils"
 
 	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
@@ -80,6 +84,29 @@ func DecodeAndDecrypt(encryptedSecret *secretsv1alpha1.EncryptedSecret) (*secret
 
 		return decryptedSecret, nil
 
+	case "aws-kms":
+		// credentials from the shared credentials file ~/.aws/credentials.
+		// ToDo: commonize the client creation code
+		cfg, err := config.LoadDefaultConfig(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		client := kms.NewFromConfig(cfg)
+
+		for key, value := range encryptedSecret.Data {
+			ciphered, _ := base64.StdEncoding.DecodeString(value)
+			decoded, err := client.Decrypt(context.TODO(), &kms.DecryptInput{
+				CiphertextBlob: ciphered,
+			})
+			if err != nil {
+				return nil, err
+			}
+			decryptedMap[key] = string(decoded.Plaintext)
+		}
+		decryptedSecret.Data = decryptedMap
+
+		return decryptedSecret, nil
+
 	}
 
 	return nil, nil
@@ -146,6 +173,29 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret) (*secrets
 
 			}
 			encryptedMap[key] = encrypted
+		}
+		encryptedSecret.Data = encryptedMap
+		return encryptedSecret, nil
+
+	case "aws-kms":
+		// credentials from the shared credentials file ~/.aws/credentials.
+		// ToDo: commonize the client creation code
+		cfg, err := config.LoadDefaultConfig(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		client := kms.NewFromConfig(cfg)
+
+		for key, value := range decryptedSecret.Data {
+			encrypted, err := client.Encrypt(context.TODO(), &kms.EncryptInput{
+				KeyId:     aws.String("alias/cryptctl-key"),
+				Plaintext: []byte(value),
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			encryptedMap[key] = base64.StdEncoding.EncodeToString(encrypted.CiphertextBlob)
 		}
 		encryptedSecret.Data = encryptedMap
 		return encryptedSecret, nil

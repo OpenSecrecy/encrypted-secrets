@@ -16,7 +16,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
-  creationTimestamp: null
   name: encryptedsecrets.secrets.shubhindia.xyz
 spec:
   group: secrets.shubhindia.xyz
@@ -129,7 +128,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: encrypted-secrets-manager-role
 rules:
 - apiGroups:
@@ -339,35 +337,12 @@ spec:
                 - linux
       containers:
       - args:
-        - --secure-listen-address=0.0.0.0:8443
-        - --upstream=http://127.0.0.1:8080/
-        - --logtostderr=true
-        - --v=0
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
-        name: kube-rbac-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        resources:
-          limits:
-            cpu: 500m
-            memory: 128Mi
-          requests:
-            cpu: 5m
-            memory: 64Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-      - args:
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
         command:
         - /manager
-        image: shubhindia/encrypted-secrets-controller:main
+        image: shubhindia/encrypted-secrets-controller:{IMAGE_TAG}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -375,9 +350,6 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
         name: manager
-        env:
-          - name: KEYPHRASE
-            value: '7vpwfEAtuC5vawuVm9CjK514sncLNL0YJUHdwIvc'
         readinessProbe:
           httpGet:
             path: /readyz
