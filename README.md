@@ -21,11 +21,51 @@ The Encrypted-Secrets Kubernetes Operator is a tool designed to enhance the secu
 ## Prerequisites
 - Encrypted-Secrets Kubernetes Operator deployed in the cluster
 
-## Installation (WIP)
+## Installation
 
-1. Deploy the Encrypted-Secrets Operator in your Kubernetes cluster by applying the provided YAML manifests or using a package manager like Helm.
+1. Deploy the Encrypted-Secrets Operator in your Kubernetes cluster by applying the provided YAML manifest from the [releases](https://github.com/shubhindia/encrypted-secrets/releases).
+
+```shell
+kubectl apply -f <operator-manifest.yaml>
+```
 
 2. Verify the operator's deployment by checking the operator pod status:
 
-   ```shell
-   kubectl get pods -n <namespace>
+```shell
+kubectl get pods encrypted-secrets-system
+```
+
+## Supported Providers
+**1. k8s:** This needs the encryption certificate to be present in the respective namespace. The certificate can be created using the following command:
+
+```shell
+cryptctl init -p k8s -n <namespace>
+```
+
+**2. aws-kms:** This operator needs permissions to use the KMS key. The permissions can be provided by creating an IAM role and attaching it to the operator pod. The IAM role should have the following permissions:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowUseOfTheKey",
+            "Effect": "Allow",
+            "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey"
+            ],
+            "Resource": [
+                "arn:aws:kms:<region>:<account-id>:key/<key-id>"
+            ]
+        }
+    ]
+}
+```
+
+Or you can just use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables.
+The kms key can be created using the following command:
+
+```shell
+cryptctl init -p aws-kms
+```
