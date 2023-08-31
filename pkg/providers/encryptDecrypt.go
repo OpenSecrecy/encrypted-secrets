@@ -157,10 +157,9 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret, reEncrypt
 				}
 
 			}
-			encryptedSecret.Data = encryptedMap
 
 		} else {
-			for key, value := range oldDecryptedData {
+			for key, value := range decryptedSecret.Data {
 				encrypted, err := staticEncryptAndEncode(value, keyPhrase)
 				if err != nil || encrypted == "" {
 					return nil, fmt.Errorf("failed to encrypt the data %s", err.Error())
@@ -168,10 +167,9 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret, reEncrypt
 				}
 				encryptedMap[key] = encrypted
 			}
-			encryptedSecret.Data = encryptedMap
 
 		}
-
+		encryptedSecret.Data = encryptedMap
 		return encryptedSecret, nil
 
 	case "aws-kms":
@@ -202,7 +200,6 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret, reEncrypt
 				}
 
 			}
-			encryptedSecret.Data = encryptedMap
 
 		} else {
 
@@ -217,8 +214,10 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret, reEncrypt
 
 				encryptedMap[key] = base64.StdEncoding.EncodeToString(encrypted.CiphertextBlob)
 			}
-			encryptedSecret.Data = encryptedMap
+
 		}
+
+		encryptedSecret.Data = encryptedMap
 		return encryptedSecret, nil
 
 	}
