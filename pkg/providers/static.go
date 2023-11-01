@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"io"
 
-	"github.com/shubhindia/encrypted-secrets/pkg/providers/utils"
+	"github.com/opensecrecy/encrypted-secrets/pkg/providers/utils"
 )
 
 func staticDecodeAndDecrypt(encoded string, keyPhrase string) (string, error) {

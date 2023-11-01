@@ -28,8 +28,8 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # This variable is used to construct full image tags for bundle and catalog images.
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# shubhindia.xyz/encryted-secrets-bundle:$VERSION and shubhindia.xyz/encryted-secrets-catalog:$VERSION.
-IMAGE_TAG_BASE ?= shubhindia/encrpyted-secrets-controller
+# opensecrecy.org/encryted-secrets-bundle:$VERSION and opensecrecy.org/encryted-secrets-catalog:$VERSION.
+IMAGE_TAG_BASE ?= opensecrecy/encrpyted-secrets-controller
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -47,7 +47,7 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 endif
 
 # Image URL to use all building/pushing image targets
-IMG ?= shubhindia/encrypted-secrets-controller
+IMG ?= opensecrecy/encrypted-secrets-controller
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.0
 

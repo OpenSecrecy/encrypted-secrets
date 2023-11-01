@@ -16,9 +16,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
-  name: encryptedsecrets.secrets.shubhindia.xyz
+  name: encryptedsecrets.secrets.opensecrecy.org
 spec:
-  group: secrets.shubhindia.xyz
+  group: secrets.opensecrecy.org
   names:
     kind: EncryptedSecret
     listKind: EncryptedSecretList
@@ -143,7 +143,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - secrets.shubhindia.xyz
+  - secrets.opensecrecy.org
   resources:
   - encryptedsecrets
   verbs:
@@ -155,13 +155,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - secrets.shubhindia.xyz
+  - secrets.opensecrecy.org
   resources:
   - encryptedsecrets/finalizers
   verbs:
   - update
 - apiGroups:
-  - secrets.shubhindia.xyz
+  - secrets.opensecrecy.org
   resources:
   - encryptedsecrets/status
   verbs:
@@ -342,7 +342,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: shubhindia/encrypted-secrets-controller:{IMAGE_TAG}
+        image: opensecrecy/encrypted-secrets-controller:{IMAGE_TAG}
         livenessProbe:
           httpGet:
             path: /healthz

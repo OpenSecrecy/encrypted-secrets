@@ -26,4 +26,4 @@ Dockerfile.cross
 *~
 
 # unwanted CRD
-config/crd/bases/secrets.shubhindia.xyz_decryptedsecrets.yaml
+config/crd/bases/secrets.opensecrecy.org_decryptedsecrets.yaml
