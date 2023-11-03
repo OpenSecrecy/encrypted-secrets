@@ -23,7 +23,7 @@ The Encrypted-Secrets Kubernetes Operator is a tool designed to enhance the secu
 
 ## Installation
 
-1. Deploy the Encrypted-Secrets Operator in your Kubernetes cluster by applying the provided YAML manifest from the [releases](https://github.com/shubhindia/encrypted-secrets/releases).
+1. Deploy the Encrypted-Secrets Operator in your Kubernetes cluster by applying the provided YAML manifest from the [releases](https://github.com/opensecrecy/encrypted-secrets/releases).
 
 ```shell
 kubectl apply -f <operator-manifest.yaml>

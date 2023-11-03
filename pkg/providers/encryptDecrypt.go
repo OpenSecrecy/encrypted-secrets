@@ -9,23 +9,23 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/shubhindia/encrypted-secrets/pkg/providers/utils"
+	"github.com/opensecrecy/encrypted-secrets/pkg/providers/utils"
 
-	secretsv1alpha1 "github.com/shubhindia/encrypted-secrets/api/v1alpha1"
+	secretsv1alpha1 "github.com/opensecrecy/encrypted-secrets/api/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func DecodeAndDecrypt(encryptedSecret *secretsv1alpha1.EncryptedSecret) (*secretsv1alpha1.DecryptedSecret, error) {
 
 	// get the provider
-	provider := encryptedSecret.GetAnnotations()["secrets.shubhindia.xyz/provider"]
+	provider := encryptedSecret.GetAnnotations()["secrets.opensecrecy.org/provider"]
 
 	// init a decryptedSecret to hold everything
 	decryptedSecret := &secretsv1alpha1.DecryptedSecret{
 		ObjectMeta: encryptedSecret.ObjectMeta,
 		TypeMeta: v1.TypeMeta{
 			Kind:       "DecryptedSecret",
-			APIVersion: "secrets.shubhindia.xyz/v1alpha1",
+			APIVersion: "secrets.opensecrecy.org/v1alpha1",
 		},
 	}
 
@@ -116,14 +116,14 @@ func DecodeAndDecrypt(encryptedSecret *secretsv1alpha1.EncryptedSecret) (*secret
 func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret) (*secretsv1alpha1.EncryptedSecret, error) {
 
 	// get the provider
-	provider := decryptedSecret.GetAnnotations()["secrets.shubhindia.xyz/provider"]
+	provider := decryptedSecret.GetAnnotations()["secrets.opensecrecy.org/provider"]
 
 	// init a encryptedSecret to hold everything
 	encryptedSecret := &secretsv1alpha1.EncryptedSecret{
 		ObjectMeta: decryptedSecret.ObjectMeta,
 		TypeMeta: v1.TypeMeta{
 			Kind:       "EncryptedSecret",
-			APIVersion: "secrets.shubhindia.xyz/v1alpha1",
+			APIVersion: "secrets.opensecrecy.org/v1alpha1",
 		},
 	}
 
