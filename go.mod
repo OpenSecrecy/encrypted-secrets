@@ -1,6 +1,6 @@
 module github.com/opensecrecy/encrypted-secrets
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/aws/aws-sdk-go v1.47.0
