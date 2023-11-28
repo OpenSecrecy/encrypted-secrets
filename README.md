@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/OpenSecrecy/encrypted-secrets/workflows/build-and-test.yaml/badge.svg)]
+[![Build Status](https://github.com/OpenSecrecy/encrypted-secrets/actions/workflows/build-and-test.yaml/badge.svg)]
 [![License](https://img.shields.io/badge/LICENSE-Apache2.0-ff69b4.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 # Encrypted-Secrets Kubernetes Operator
 
