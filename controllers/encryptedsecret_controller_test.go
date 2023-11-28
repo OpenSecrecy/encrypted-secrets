@@ -18,14 +18,15 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"k8s.io/apimachinery/pkg/types"
+
 	secretsv1alpha1 "github.com/opensecrecy/encrypted-secrets/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -36,6 +37,13 @@ var _ = Describe("EncryptedSecrets", func() {
 		namespacedName := types.NamespacedName{
 			Namespace: "default",
 		}
+		It("Reconcile non-existent object", func() {
+			namespacedName.Name = "test-encrypted-secret-non-existent"
+			res, err := reconciler.Reconcile(ctx, ctrl.Request{NamespacedName: namespacedName})
+			// expect no error and no requeue since the object doesn't exist
+			Expect(err).To(BeNil())
+			Expect(res.Requeue).To(BeFalse())
+		})
 		It("Check for failure since decryption key doesn't exist", func() {
 
 			namespacedName.Name = "test-encrypted-secret"
@@ -80,7 +88,7 @@ var _ = Describe("EncryptedSecrets", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"tls.crt": []byte("LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMrakNDQWVLZ0F3SUJBZ0lRWFBSM2xHV1VSL2hOUTQyTTBFQWNJekFOQmdrcWhraUc5dzBCQVFzRkFEQVgKTVJVd0V3WURWUVFERXd4amNubHdkR04wYkMxclpYa3dIaGNOTWpNd09ESXhNVEUxT1RVMldoY05Nek13T0RFNApNVEUxT1RVMldqQVhNUlV3RXdZRFZRUURFd3hqY25sd2RHTjBiQzFyWlhrd2dnRWlNQTBHQ1NxR1NJYjNEUUVCCkFRVUFBNElCRHdBd2dnRUtBb0lCQVFEVDNreFZCTHdiTHEvUzNxUzlNVU9id2tiV05CZGZUVkFHekdOUEpyVXcKWmE1c1dhNExUNGtZcHhLWDBIVW1aNmIrckF1c1ZHT0oxL2haNi9yYU1DOHI5VVUwSVVPMit1d3B4QlE5eDVYZwo0aWZFRnFBOTJCNFRRRStXSVkzUFFZdnlsZWVCc2RIQWVHYUo2Tlc2bC93enUxZFh4eHVsYmgzU2R3QUk0TFJoCmwrRjlCNGovSWgwUlBjOWlBc21CY0xLYjVwcDZwMlJZdFVObWwwTWNPd1lhWXIyRWhhZnkxNC84UVRvRW11TzUKV0dleUJidHI0MytzOXloZmdNYmRyaEpuYzhLeCtrQTZISWw1N0RtTS9XR2hKcVNLRmxrN3E0UHhPLzZWeVR1awpOZUtEZ3dJQ0dyRDYzOEpqRTcvZi94YnY2azlyY3paV2dBWWppTUdVRUx1dEFnTUJBQUdqUWpCQU1BNEdBMVVkCkR3RUIvd1FFQXdJQUFUQVBCZ05WSFJNQkFmOEVCVEFEQVFIL01CMEdBMVVkRGdRV0JCUzErODBMMTRKaDVqdnUKT2xSTndhVEtORnBhanpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUlzVWh1TTVKZWp1WjNLdXpYNWVJdkxGUQpXM2NPVHBuWTB6KzhoclVNVEg1U3RycnJXRzJoblZ2ZXMvL0NXb2ZwdmxyUHhMYWsxWm5meGRhNmV4ZW9LckdvCnJRd3pNTytvQ055eFNCTGFWSHJ6cC91YThiTFo4RlZlTHRXcmtSZWJhVXMwWnNZalpydXFmQ3BQb2NSbjM0QzMKK0hKbjVwQTJwSjZaUFZrNnlGWDRlWGNqY3Y0TWdpRWt2NWd6R2pMNEFrK2JQelNRbkpQVnpiMysxS1Q1Q1NRegpJRmRsL3VGQ2taMitRVHJJZnBKYUo2QlVKTkhMWENBZmc0YTZsRERyS3NkZGUzTmlVck83MDJvREk2eTg2dVJECmxqVWlJL0xseEsxTGRDVHlURlRUSUY1ZTA5d2VwaHNsR2p0SUlJZm5HSk43bzZ3NlNSVHI3UnQ3eWN6dGZBPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="),
+					"tls.crt": []byte("LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMrekNDQWVPZ0F3SUJBZ0lSQU5ZNDNuL1NVYXgzWHJrOTBoSkdkSEF3RFFZSktvWklodmNOQVFFTEJRQXcKRnpFVk1CTUdBMVVFQXhNTVkzSjVjSFJqZEd3dGEyVjVNQjRYRFRJek1URXlPREE0TlRZME9Gb1hEVE16TVRFeQpOVEE0TlRZME9Gb3dGekVWTUJNR0ExVUVBeE1NWTNKNWNIUmpkR3d0YTJWNU1JSUJJakFOQmdrcWhraUc5dzBCCkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTRib25VdDVLN1lJb2xwUlZZN2ZJSStkR1ZYckRxTUdhMGg2YitNR1EKRE1MN1lYdEc4d2Z5bFArbUpNRFRZYXYwdDYyUDdzWkdiZlFLWmNQRWlTMi9lcWVxblRrWnJHVC9CNEdxSHcydgo3bVBFU1ZUY21QZWdoWTBHVHlMeGdGK2lLUXRaREpCOVhyVW5WN3RFWmVPQ3dHNTFTWjVXZG84NXpxRjlUaXM1CkFralhKT0wwTDRNQVlEeGtmcjN6TDlvek9FVS9aQjI2dEZET1UzcjJwSVk3L3N2UEppN2tId3BISmVPcTd0SVQKaGNpb2wwMmUxUkRxZGtheEJsdWM3bUdRZzV4dzB4OTJHSVM4NmRUcU1vRm1VaUQ2ZTJ2N2grNndpS1R1RXZKcAo2a05zVkZSRHFKdzhxVG9qb3VoWFdKZHBWd0ZEdmI3RU1YWEREZHZ1aHVNT1l3SURBUUFCbzBJd1FEQU9CZ05WCkhROEJBZjhFQkFNQ0FBRXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVYSFVpZnVWajhseW0KMU5RU3BmWUl1bWJzL21Jd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFINXhhVlJWUDl5L3FZaEJWSE0yUnVrMQpXeC9pUGtPdzlGejJCZjVIc3cwWXlYWVpVRnVkazN1TVpmMi91Q01nRUpRM3l3K1B6aTc5UEo5TDdEV1cxWkdyCkdZL1FMM3gwSmlmNzd0dzc2WWlDaHVsTTB1V2duQ09xclpOYUQyVjU2SGdieE9oZ2F4UDVTSGdETk8zNUFNT3QKcGVkb3JjQWprc0VvQzhyNkZUamI0VmwrQ25Bclc1cnM4NHJ3QUJhQ2JaNm9QaXVaV1ZScTlwdUhMOUtVV3p6agpvaW9nSUlvR3p0NEdSdXY3OHA3bWlTUjZlNkgvYTgySnVRRkFwakF6MTNxZHpqOUhVSXJLNmc3d2h5amVJK3NFCnJPNXpubWtkOEpYN2NibjhGVlFYbi9jUXpWQXVqeGRwOFhNd0ZTUTBFQWc3UXl1czV3b1B5UTNINWd0Zmh2UT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="),
 				},
 			}
 			err := k8sClient.Create(ctx, decryptionKey)
@@ -95,8 +103,8 @@ var _ = Describe("EncryptedSecrets", func() {
 					},
 				},
 				Data: map[string]string{
-					"secret1": "4GeYrfHDZrGN+QsZO76LnrMTc1zb6sbwIpSRR+SuSbDY+yNjH7K8",
-					"secret2": "uuGfVjV9k9al/N92VX9zqk8UN3HvNl77XBgCGSsJqeE=",
+					"secret1": "r2nag9gEttCMQNgOn3BUF32/ICaeI+pqKb7+sx7cnGRWK3MJvKW1",
+					"secret2": "Jpe82jgV7DC1jf98oivf/DIAFu/iRsL3sx+W93DiKSqlpt41sMl/Cww=",
 				},
 			}
 			// Create the EncryptedSecret object and expect the Reconcile
@@ -104,14 +112,13 @@ var _ = Describe("EncryptedSecrets", func() {
 
 			// reconcile
 			res, err := reconciler.Reconcile(ctx, ctrl.Request{NamespacedName: namespacedName})
-
 			Expect(err).To(BeNil())
 			Expect(res.Requeue).To(BeFalse())
+
 			// get the instance again to check if the status is updated
 			_ = k8sClient.Get(ctx, namespacedName, instance)
-			fmt.Printf("%+v", instance)
 			Expect(instance.Status.Status).To(Equal(secretsv1alpha1.EncryptedSecretStatusReady))
-			Expect(instance.Status.Message).To(ContainSubstring("failed to decrypt"))
+			Expect(instance.Status.Message).To(ContainSubstring("ready to be used"))
 
 		})
 
