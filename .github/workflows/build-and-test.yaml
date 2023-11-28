@@ -68,7 +68,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           # list of Docker images to use as base name for tags
-          images: shubhindia/encrypted-secrets-controller
+          images: opensecrecy/encrypted-secrets-controller
       - name: Build and push
         uses: docker/build-push-action@v4
         with:

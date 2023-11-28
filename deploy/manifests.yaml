@@ -342,7 +342,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: shubhindia/encrypted-secrets-controller:{IMAGE_TAG}
+        image: opensecrecy/encrypted-secrets-controller:{IMAGE_TAG}
         livenessProbe:
           httpGet:
             path: /healthz
