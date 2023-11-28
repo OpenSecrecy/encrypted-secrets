@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/OpenSecrecy/encrypted-secrets/workflows/build-and-test.yaml/badge.svg)]
+[![License](https://img.shields.io/badge/LICENSE-Apache2.0-ff69b4.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 # Encrypted-Secrets Kubernetes Operator
 
 The Encrypted-Secrets Kubernetes Operator is a tool designed to enhance the security of your Kubernetes cluster by automatically decrypting encrypted secrets and storing them in Kubernetes Secrets. This operator looks for the `EncryptedSecret` custom resource kind and performs the decryption process, ensuring that sensitive information remains protected while being accessible to your applications.

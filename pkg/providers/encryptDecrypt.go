@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
@@ -33,25 +32,6 @@ func DecodeAndDecrypt(encryptedSecret *secretsv1alpha1.EncryptedSecret) (*secret
 	decryptedMap := make(map[string]string)
 
 	switch provider {
-	case "static":
-		keyPhrase := os.Getenv("KEYPHRASE")
-		if keyPhrase == "" {
-			return nil, fmt.Errorf("keyphrase not found")
-		}
-
-		for key, value := range encryptedSecret.Data {
-			decoded, err := staticDecodeAndDecrypt(value, keyPhrase)
-			if err != nil {
-				return nil, err
-			}
-			decryptedMap[key] = decoded
-		}
-
-		// add the decrypted values to decryptedSecret
-		decryptedSecret.Data = decryptedMap
-
-		return decryptedSecret, nil
-
 	case "k8s":
 		k8sClient, err := utils.GetKubeClient()
 		if err != nil {
@@ -106,10 +86,9 @@ func DecodeAndDecrypt(encryptedSecret *secretsv1alpha1.EncryptedSecret) (*secret
 		decryptedSecret.Data = decryptedMap
 
 		return decryptedSecret, nil
-
+	default:
+		return nil, fmt.Errorf("invalid provider %s", provider)
 	}
-
-	return nil, nil
 
 }
 
@@ -131,22 +110,6 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret) (*secrets
 	encryptedMap := make(map[string]string)
 
 	switch provider {
-	case "static":
-		keyPhrase := os.Getenv("KEYPHRASE")
-		if keyPhrase == "" {
-			return nil, fmt.Errorf("keyphrase not found")
-		}
-		for key, value := range decryptedSecret.Data {
-			encrypted, err := staticEncryptAndEncode(value, keyPhrase)
-			if err != nil || encrypted == "" {
-				return nil, fmt.Errorf("failed to encrypt the data %s", err.Error())
-
-			}
-			encryptedMap[key] = encrypted
-		}
-		encryptedSecret.Data = encryptedMap
-		return encryptedSecret, nil
-
 	case "k8s":
 		k8sClient, err := utils.GetKubeClient()
 		if err != nil {
@@ -199,8 +162,8 @@ func EncryptAndEncode(decryptedSecret secretsv1alpha1.DecryptedSecret) (*secrets
 		}
 		encryptedSecret.Data = encryptedMap
 		return encryptedSecret, nil
-
+	default:
+		return nil, fmt.Errorf("invalid provider %s", provider)
 	}
-	return nil, nil
 
 }

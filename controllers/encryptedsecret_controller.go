@@ -59,6 +59,7 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	decryptedObj, err := providers.DecodeAndDecrypt(instance)
 	if err != nil {
+		r.log.Error(err, "Failed to decrypt")
 		instance.Status.Status = secretsv1alpha1.EncryptedSecretStatusError
 		instance.Status.Message = fmt.Sprintf("failed to decrypt value for %s", err.Error())
 		return r.ensureStatus(ctx, instance, ctrl.Result{})

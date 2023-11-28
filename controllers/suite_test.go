@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -25,12 +27,14 @@ import (
 
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	secretsv1alpha1 "github.com/opensecrecy/encrypted-secrets/api/v1alpha1"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -40,6 +44,7 @@ import (
 var cfg *rest.Config
 var k8sClient client.Client
 var testEnv *envtest.Environment
+var reconciler *EncryptedSecretReconciler
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -61,6 +66,8 @@ var _ = BeforeSuite(func() {
 	cfg, err = testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
+	kubeconfig := CreateKubeconfigFileForRestConfig(*cfg)
+	Expect(kubeconfig).NotTo(BeNil())
 
 	err = secretsv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
@@ -71,10 +78,48 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())
 
+	reconciler = &EncryptedSecretReconciler{
+		Client: k8sClient,
+		Scheme: scheme.Scheme,
+		log:    logf.FromContext(context.Background()),
+	}
+
 })
+
+func CreateKubeconfigFileForRestConfig(restConfig rest.Config) string {
+	clusters := make(map[string]*clientcmdapi.Cluster)
+	clusters["default-cluster"] = &clientcmdapi.Cluster{
+		Server:                   restConfig.Host,
+		CertificateAuthorityData: restConfig.CAData,
+	}
+	contexts := make(map[string]*clientcmdapi.Context)
+	contexts["default-context"] = &clientcmdapi.Context{
+		Cluster:  "default-cluster",
+		AuthInfo: "default-user",
+	}
+	authinfos := make(map[string]*clientcmdapi.AuthInfo)
+	authinfos["default-user"] = &clientcmdapi.AuthInfo{
+		ClientCertificateData: restConfig.CertData,
+		ClientKeyData:         restConfig.KeyData,
+	}
+	clientConfig := clientcmdapi.Config{
+		Kind:           "Config",
+		APIVersion:     "v1",
+		Clusters:       clusters,
+		Contexts:       contexts,
+		CurrentContext: "default-context",
+		AuthInfos:      authinfos,
+	}
+	kubeConfigFile, _ := os.Create("../kubeconfig")
+	_ = clientcmd.WriteToFile(clientConfig, kubeConfigFile.Name())
+	return kubeConfigFile.Name()
+}
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
+
+	// delete the kubeconfig file
+	Expect(os.Remove("../kubeconfig")).To(Succeed())
 })
