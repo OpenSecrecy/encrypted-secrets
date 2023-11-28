@@ -38,6 +38,11 @@ func GetKubeClient() (*kubernetes.Clientset, error) {
 	home := homedir.HomeDir()
 	kubeconfig := filepath.Join(home, ".kube", "config")
 
+	// check for KUBECONFIG env variable
+	if os.Getenv("KUBECONFIG") != "" {
+		kubeconfig = os.Getenv("KUBECONFIG")
+	}
+
 	// Build the client configuration from the provided kubeconfig file
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
