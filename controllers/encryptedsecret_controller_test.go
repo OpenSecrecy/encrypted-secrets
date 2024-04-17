@@ -124,7 +124,33 @@ var _ = Describe("EncryptedSecrets", func() {
 			err = k8sClient.Get(ctx, namespacedName, secret)
 			Expect(err).To(BeNil())
 			Expect(secret.Data["secret"]).To(Equal([]byte("hello-world")))
+		})
+		It("Don't reconcile if annotation is present", func() {
+			namespacedName.Name = "test-encrypted-secret-annotation"
+			instance := &secretsv1alpha1.EncryptedSecret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-encrypted-secret-annotation",
+					Namespace: "default",
+					Annotations: map[string]string{
+						"secrets.opensecrecy.org/provider":                 "k8s",
+						"secrets.opensecrecy.org/inject-encrypted-secrets": "true",
+					},
+				},
+				Data: map[string]string{
+					"secret": "VdnNsF55TFX9kRiorzy0XPJQRK0FlICFntVqgEMeGOqq+IZfpHmr",
+				},
+			}
+			// Create the EncryptedSecret object and expect the Reconcile
+			Expect(k8sClient.Create(ctx, instance)).Should(Succeed())
+			// reconcile
+			res, err := reconciler.Reconcile(ctx, ctrl.Request{NamespacedName: namespacedName})
+			Expect(err).To(BeNil())
+			Expect(res.Requeue).To(BeFalse())
 
+			// secret should not be created
+			secret := &corev1.Secret{}
+			err = k8sClient.Get(ctx, namespacedName, secret)
+			Expect(err).To(Not(BeNil()))
 		})
 
 	})
