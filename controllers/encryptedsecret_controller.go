@@ -57,6 +57,14 @@ func (r *EncryptedSecretReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	}
 
+	// check if injectAnnotation exists
+	if addInitcontainer, ok := instance.Annotations["secrets.opensecrecy.org/inject-encrypted-secrets"]; ok && addInitcontainer == "true" {
+		r.log.Info(fmt.Sprintf("Skipping reconciliation for %s in %s since the secret is supposed to be injected", instance.Name, instance.Namespace))
+		return ctrl.Result{Requeue: false}, nil
+	}
+
+	fmt.Printf("I should not run\n")
+
 	decryptedObj, err := providers.DecodeAndDecrypt(instance)
 	if err != nil {
 		r.log.Error(err, "Failed to decrypt")
